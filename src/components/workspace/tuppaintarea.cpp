@@ -603,18 +603,35 @@ void TupPaintArea::itemResponse(TupItemResponse *response)
     if (!guiScene->currentScene())
         return;
 
+    const TupProject::Mode responseSpaceMode = response->spaceMode();
+    if (responseSpaceMode == TupProject::VECTOR_DYNAMIC_BG_MODE) {
+        TupScene *responseScene = project->sceneAt(response->getSceneIndex());
+        if (responseScene) {
+            TupBackground *responseBackground = responseScene->sceneBackground();
+            if (responseBackground)
+                responseBackground->scheduleVectorRender(true);
+        }
+    }
+
     if (!guiScene->userIsDrawing()) {
         switch(response->getAction()) {
             case TupProjectRequest::Transform:
               {
+                  const bool targetsCurrentScene =
+                      response->getSceneIndex() == guiScene->currentSceneIndex();
                   const bool targetsCurrentFrame =
-                      response->getSceneIndex() == guiScene->currentSceneIndex()
+                      targetsCurrentScene
                       && response->getLayerIndex() == guiScene->currentLayerIndex()
                       && response->getFrameIndex() == guiScene->currentFrameIndex();
+                  const bool affectsVisibleBackground =
+                      targetsCurrentScene
+                      && (responseSpaceMode == TupProject::VECTOR_STATIC_BG_MODE
+                          || responseSpaceMode == TupProject::VECTOR_DYNAMIC_BG_MODE
+                          || responseSpaceMode == TupProject::VECTOR_FG_MODE);
 
                   if (response->external()
                       && spaceMode == TupProject::FRAMES_MODE
-                      && targetsCurrentFrame) {
+                      && (targetsCurrentFrame || affectsVisibleBackground)) {
                       guiScene->drawCurrentPhotogram();
                   }
 
