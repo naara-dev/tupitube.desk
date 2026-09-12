@@ -530,11 +530,6 @@ void TupTimeLine::frameResponse(TupFrameResponse *response)
         int layerIndex = response->getLayerIndex();
         int frameIndex = response->getFrameIndex();
 
-        // Background and foreground item responses are not addressed to a
-        // timeline layer/frame. Do not run frame occupancy logic for them.
-        if (layerIndex < 0 || frameIndex < 0)
-            return;
-
         switch (response->getAction()) {
             case TupProjectRequest::Add:
               {
@@ -702,6 +697,11 @@ void TupTimeLine::itemResponse(TupItemResponse *response)
     if (framesTable) {
         int layerIndex = response->getLayerIndex();
         int frameIndex = response->getFrameIndex();
+
+        // Background and foreground item responses are not addressed to a
+        // timeline layer/frame. Do not run frame occupancy logic for them.
+        if (layerIndex < 0 || frameIndex < 0)
+            return;
 
         switch (response->getAction()) {
             case TupProjectRequest::Add:
